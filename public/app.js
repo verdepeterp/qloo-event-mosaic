@@ -1,0 +1,8 @@
+const form=document.querySelector('#form');
+const output=document.querySelector('#output');
+const button=document.querySelector('#submit');
+const element=(tag,text,className='')=>{const node=document.createElement(tag);node.textContent=text;if(className)node.className=className;return node};
+function showLoading(){output.hidden=false;output.replaceChildren(element('p','El agente está resolviendo referentes y calculando afinidades…','empty'));}
+function showProgramme(data){output.replaceChildren();output.append(element('h2','Programa sugerido'));const program=document.createElement('div');program.className='program';for(const item of data.programme||[]){const card=document.createElement('article');card.className='item';card.append(element('b',`${item.moment}: ${item.name}`),element('p',item.rationale,'hint'));program.append(card);}output.append(program);output.append(element('h3','Trazabilidad'));const trace=document.createElement('pre');trace.className='trace';trace.textContent=(data.trace||[]).map(step=>JSON.stringify(step)).join('\n');output.append(trace);}
+function showError(message){output.replaceChildren(element('p',message,'error'));}
+form.addEventListener('submit',async event=>{event.preventDefault();button.disabled=true;showLoading();try{const params=new URLSearchParams({seeds:document.querySelector('#seeds').value,category:document.querySelector('#category').value});const response=await fetch(`/api/recommend?${params}`);const data=await response.json();if(!response.ok)throw new Error(data.error||'No se pudo crear el programa.');showProgramme(data);}catch(error){showError(error.message||'No se pudo crear el programa.');}finally{button.disabled=false;}});
